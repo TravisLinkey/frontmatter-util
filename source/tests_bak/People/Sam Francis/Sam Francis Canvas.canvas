@@ -1,0 +1,9 @@
+{
+	"nodes":[
+		{"id":"242d506971d6578b","type":"file","file":"2 - Full Notes/Philosophy/People/Niccolò Machiavelli/Machiavelian.md","x":-40,"y":300,"width":811,"height":560},
+		{"id":"0d447645c67922dd","type":"file","file":"2 - Full Notes/Politics/People/Sam Francis/Concepts/Ethno-Nationalism.md","x":-1184,"y":229,"width":726,"height":351},
+		{"id":"2c68e9ef3b7fc23e","type":"file","file":"2 - Full Notes/Politics/People/Sam Francis/Concepts/Managerial Elites.md","x":-1280,"y":-640,"width":683,"height":252},
+		{"id":"d2a161ac582336f8","type":"file","file":"2 - Full Notes/Politics/People/Sam Francis/Concepts/Middle American Radicals.md","x":-458,"y":-460,"width":781,"height":356}
+	],
+	"edges":[]
+}

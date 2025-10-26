@@ -1,0 +1,13 @@
+{
+	"nodes":[
+		{"id":"b1a0d8cb0aef5df8","x":-720,"y":-80,"width":250,"height":60,"type":"text","text":"Common design vocabulary"},
+		{"id":"6e44c016d1894144","x":-595,"y":-250,"width":250,"height":60,"type":"text","text":"Design consistency"},
+		{"id":"bfe5bf86e35b92ef","x":60,"y":-50,"width":250,"height":60,"type":"text","text":"Reduce Side Effects"},
+		{"id":"cdbb688b80a633eb","x":-260,"y":-50,"width":250,"height":60,"type":"text","text":"Improve Documentation"},
+		{"id":"2d9ea098f1d847a4","x":-80,"y":70,"width":250,"height":60,"type":"text","text":"Reduce testing surface + more testing"},
+		{"id":"9f0d01364b324117","x":-100,"y":-180,"width":250,"height":60,"type":"text","text":"Align with Duece standards"}
+	],
+	"edges":[
+		{"id":"5f5c016c0c51c01c","fromNode":"6e44c016d1894144","fromSide":"bottom","toNode":"b1a0d8cb0aef5df8","toSide":"top"}
+	]
+}
