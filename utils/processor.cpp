@@ -1,5 +1,6 @@
 #include "processor.h"
 #include "file_utils.h"
+#include "io.h"
 #include "string_utils.h"
 #include <filesystem>
 #include <iostream>
@@ -7,9 +8,15 @@
 #include <string>
 #include <vector>
 
+std::string template_filepath = "/Users/travislinkey/Projects/cpp/workspace/frontmatter-util/source/templates/front_matter_template.md";
+
+
 std::string add_frontmatter_from_template(std::string file_contents) {
-  std::string filepath = "./source/templates/front_matter_template.md";
-  std::string header = read_file(filepath);
+  if (detect_frontmatter(file_contents)) {
+    return file_contents;
+  }
+
+  std::string header = read_file(template_filepath);
   return header + file_contents;
 }
 
@@ -38,6 +45,25 @@ add_tag_block(std::vector<std::string> filtered_file_contents,
   }
 
   return updated_tokens;
+}
+
+std::string append_empty_subject(std::string file_contents, std::string value) {
+
+  std::vector<std::string> tokens = vectorize_string(file_contents);
+  std::ostringstream oss;
+
+  // append subject to the second field
+  int line_number = 0;
+  for (const std::string &line : tokens) {
+    if (line_number == 1) {
+      oss << "Subject: " + value + "\n";
+    }
+    oss << line;
+    line_number++;
+  }
+
+  std::string updated_frontmatter = oss.str();
+  return updated_frontmatter;
 }
 
 std::string append_empty_tag(std::string file_contents, std::string tag) {
@@ -110,48 +136,16 @@ bool detect_frontmatter(std::string file_contents) {
   return hasTop && hasBottom;
 }
 
-bool frontmatter_contains_tag(const std::string &file_contents) {
-  if (file_contents.find("tags:") != std::string::npos) {
-    return true;
+bool frontmatter_contains_field(const std::string &file_contents,
+                                FrontmatterField field) {
+  switch (field) {
+  case FrontmatterField::Tag:
+    return string_contains(file_contents, "tags:");
+  case FrontmatterField::Subject:
+    return string_contains(file_contents, "Subject:");
   }
 
   return false;
-}
-
-void process_files(std::vector<std::string> file_tree, std::string tag) {
-  namespace fs = std::filesystem;
-
-  for (std::string &file_path : file_tree) {
-    // skip directories
-    if (fs::is_directory(file_path))
-      continue;
-
-    std::string file_extention = get_file_extention(file_path);
-
-    // skip non markdown files
-    if (file_extention != "md")
-      continue;
-
-    std::string file_contents = read_file(file_path);
-
-    std::string tagged_file_content;
-    if (!detect_frontmatter(file_contents)) {
-      file_contents = add_frontmatter_from_template(file_contents);
-    }
-
-    bool has_tag = frontmatter_contains_tag(file_contents);
-    if (has_tag) {
-      file_contents = move_tag_block(file_contents, tag);
-    } else {
-      file_contents = append_empty_tag(file_contents, tag);
-    }
-
-    // std::cout << "-- Final Content --" << std::endl;
-    // std::cout << file_contents << std::endl;
-
-    std::string new_file_path = file_path;
-    write_file(new_file_path, file_contents);
-  }
 }
 
 std::string move_tag_block(const std::string file_contents, std::string tag) {
@@ -169,6 +163,91 @@ std::string move_tag_block(const std::string file_contents, std::string tag) {
   std::string final_content = stringify_vector(updated_file_contents);
 
   return final_content;
+}
+
+std::string overwrite_subject(std::string file_contents, std::string value) {
+
+  std::vector<std::string> tokens = vectorize_string(file_contents);
+  std::ostringstream oss;
+
+  // find subject, overwrite it
+  for (const std::string &line : tokens) {
+    if (line.find("Subject:") != std::string::npos) {
+      oss << "Subject: " + value + "\n";
+      continue;
+    }
+
+    oss << line;
+  }
+
+  std::string updated_frontmatter = oss.str();
+  return updated_frontmatter;
+}
+
+void process_files(std::vector<std::string> file_tree, FrontmatterField key,
+                   std::string value) {
+  namespace fs = std::filesystem;
+
+  for (std::string &file_path : file_tree) {
+    // skip directories
+    if (fs::is_directory(file_path))
+      continue;
+
+    // skip non markdown files
+    if (get_file_extention(file_path) != "md")
+      continue;
+
+    const std::string file_contents = read_file(file_path);
+    const std::string file_contents_with_frontmatter =
+        add_frontmatter_from_template(file_contents);
+
+    std::string updated_file_contents;
+    switch (key) {
+    case FrontmatterField::Tag:
+      updated_file_contents =
+          process_tags(file_contents_with_frontmatter, value);
+      break;
+    case FrontmatterField::Subject:
+      updated_file_contents =
+          process_subject(file_contents_with_frontmatter, value);
+      break;
+    }
+
+    //std::cout << "-- Final Content --" << std::endl;
+    //std::cout << updated_file_contents << std::endl;
+
+    std::string new_file_path = file_path;
+    write_file(new_file_path, updated_file_contents);
+  }
+}
+
+std::string process_subject(const std::string file_contents,
+                            const std::string value) {
+  std::string updated_file_contents;
+
+  const bool has_subject =
+      frontmatter_contains_field(file_contents, FrontmatterField::Subject);
+  if (!has_subject) {
+    updated_file_contents = append_empty_subject(file_contents, value);
+  } else {
+    updated_file_contents = overwrite_subject(file_contents, value);
+  }
+
+  return updated_file_contents;
+}
+
+std::string process_tags(const std::string file_contents,
+                         const std::string value) {
+  std::string updated_file_contents;
+
+  bool has_tag =
+      frontmatter_contains_field(file_contents, FrontmatterField::Tag);
+  if (has_tag) {
+    updated_file_contents = move_tag_block(file_contents, value);
+  } else {
+    updated_file_contents = append_empty_tag(file_contents, value);
+  }
+  return updated_file_contents;
 }
 
 std::vector<std::string> remove_tag_block(std::vector<std::string> tokens) {
@@ -195,3 +274,5 @@ std::vector<std::string> remove_tag_block(std::vector<std::string> tokens) {
 
   return updated_tokens;
 }
+
+// TODO

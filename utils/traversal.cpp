@@ -1,6 +1,5 @@
 #include "traversal.h"
 #include <filesystem>
-#include <iostream>
 #include <string>
 #include <vector>
 

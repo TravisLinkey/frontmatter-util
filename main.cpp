@@ -1,6 +1,7 @@
 #include "utils/io.h"
 #include "utils/processor.h"
 #include "utils/traversal.h"
+#include <array>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -11,24 +12,22 @@
  * @argv - argument values
  * **/
 int main(int argc, char *argv[]) {
-  if (argc < 3) {
+  if (argc < 4) {
     throw std::invalid_argument("Missing required argument: tag");
   }
 
-  std::string tag = argv[1];
-  const std::string file_path = argv[2];
+  auto args = std::array<std::string, 3>{argv[1], argv[2], argv[3]};
+  auto [key, value, file_path] = args;
 
-  std::cout << "[Tag]: " + tag << std::endl;
+  std::cout << "[Type]: " + key << std::endl;
+  std::cout << "[Tag]: " + value << std::endl;
   std::cout << "[Location]: " + file_path << std::endl;
 
-  // Depth first search to get filepaths for tree
+  FrontmatterField field = toField(key);
+
   std::vector<std::string> file_tree = dfs(file_path);
-  process_files(file_tree, tag);
+  process_files(file_tree, field, value);
 
   return 0;
 }
 
-// TODO
-// 1. Accept different flags for Subject, tags, etc.
-// 2. Branch on the flag passed
-// 3. 
