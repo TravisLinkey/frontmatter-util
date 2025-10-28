@@ -8,8 +8,9 @@
 #include <string>
 #include <vector>
 
-std::string template_filepath = "/Users/travislinkey/Projects/cpp/workspace/frontmatter-util/source/templates/front_matter_template.md";
-
+std::string template_filepath =
+    "/Users/travislinkey/Projects/cpp/workspace/frontmatter-util/source/"
+    "templates/front_matter_template.md";
 
 std::string add_frontmatter_from_template(std::string file_contents) {
   if (detect_frontmatter(file_contents)) {
@@ -47,8 +48,8 @@ add_tag_block(std::vector<std::string> filtered_file_contents,
   return updated_tokens;
 }
 
-std::string append_empty_subject(std::string file_contents, std::string value) {
-
+std::string append_empty_subject(std::string file_contents,
+                                 FrontmatterField key, std::string value) {
   std::vector<std::string> tokens = vectorize_string(file_contents);
   std::ostringstream oss;
 
@@ -56,7 +57,7 @@ std::string append_empty_subject(std::string file_contents, std::string value) {
   int line_number = 0;
   for (const std::string &line : tokens) {
     if (line_number == 1) {
-      oss << "Subject: " + value + "\n";
+      oss << enumToString(key) + ": " + value + "\n";
     }
     oss << line;
     line_number++;
@@ -143,6 +144,8 @@ bool frontmatter_contains_field(const std::string &file_contents,
     return string_contains(file_contents, "tags:");
   case FrontmatterField::Subject:
     return string_contains(file_contents, "Subject:");
+  case FrontmatterField::Type:
+    return string_contains(file_contents, "Type:");
   }
 
   return false;
@@ -165,15 +168,17 @@ std::string move_tag_block(const std::string file_contents, std::string tag) {
   return final_content;
 }
 
-std::string overwrite_subject(std::string file_contents, std::string value) {
-
+std::string overwrite_subject(std::string file_contents, FrontmatterField key,
+                              std::string value) {
   std::vector<std::string> tokens = vectorize_string(file_contents);
   std::ostringstream oss;
 
-  // find subject, overwrite it
+  std::string field = enumToString(key);
+
+  // find type, overwrite it
   for (const std::string &line : tokens) {
-    if (line.find("Subject:") != std::string::npos) {
-      oss << "Subject: " + value + "\n";
+    if (line.find(field + ":") != std::string::npos) {
+      oss << field + ": " + value + "\n";
       continue;
     }
 
@@ -185,7 +190,7 @@ std::string overwrite_subject(std::string file_contents, std::string value) {
 }
 
 void process_files(std::vector<std::string> file_tree, FrontmatterField key,
-                   std::string value) {
+                   std::string value, bool just_testing) {
   namespace fs = std::filesystem;
 
   for (std::string &file_path : file_tree) {
@@ -207,30 +212,34 @@ void process_files(std::vector<std::string> file_tree, FrontmatterField key,
       updated_file_contents =
           process_tags(file_contents_with_frontmatter, value);
       break;
+
+    // TODO - fix this below
+    case FrontmatterField::Type:
     case FrontmatterField::Subject:
       updated_file_contents =
-          process_subject(file_contents_with_frontmatter, value);
+          process_field(file_contents_with_frontmatter, key, value);
       break;
     }
 
-    //std::cout << "-- Final Content --" << std::endl;
-    //std::cout << updated_file_contents << std::endl;
-
-    std::string new_file_path = file_path;
-    write_file(new_file_path, updated_file_contents);
+    if (just_testing) {
+      std::cout << "-- Final Content --" << std::endl;
+      std::cout << updated_file_contents << std::endl;
+    } else {
+      std::string new_file_path = file_path;
+      write_file(new_file_path, updated_file_contents);
+    }
   }
 }
 
-std::string process_subject(const std::string file_contents,
-                            const std::string value) {
+std::string process_field(const std::string file_contents, FrontmatterField key,
+                          const std::string value) {
   std::string updated_file_contents;
 
-  const bool has_subject =
-      frontmatter_contains_field(file_contents, FrontmatterField::Subject);
+  const bool has_subject = frontmatter_contains_field(file_contents, key);
   if (!has_subject) {
-    updated_file_contents = append_empty_subject(file_contents, value);
+    updated_file_contents = append_empty_subject(file_contents, key, value);
   } else {
-    updated_file_contents = overwrite_subject(file_contents, value);
+    updated_file_contents = overwrite_subject(file_contents, key, value);
   }
 
   return updated_file_contents;

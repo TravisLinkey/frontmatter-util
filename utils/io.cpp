@@ -5,18 +5,30 @@
 #include <unordered_map>
 #include <vector>
 
-FrontmatterField toField(const std::string &s) {
-  static const std::unordered_map<std::string, FrontmatterField> lookup = {
-      {"Subject", FrontmatterField::Subject},
-      {"-s", FrontmatterField::Subject},
-      {"Tag", FrontmatterField::Tag},
-      {"-t", FrontmatterField::Tag}
-  };
+static const std::unordered_map<std::string, FrontmatterField> kStringToEnum = {
+    {"Subject", FrontmatterField::Subject},
+    {"Tag", FrontmatterField::Tag},
+    {"Type", FrontmatterField::Type},
+};
 
-  if (auto it = lookup.find(s); it != lookup.end())
+static const std::unordered_map<FrontmatterField, std::string> kEnumToString = {
+    {FrontmatterField::Subject, "Subject"},
+    {FrontmatterField::Tag, "Tag"},
+    {FrontmatterField::Type, "Type"},
+};
+
+FrontmatterField stringToEnum(const std::string &s) {
+  if (auto it = kStringToEnum.find(s); it != kStringToEnum.end())
     return it->second;
   throw std::runtime_error("Invalid frontmatter type: " + s +
-                           "\nMust be of type: [Subject, Tag]");
+                           "\nMust be of type: [Subject, Tag, Type]");
+}
+
+std::string enumToString(FrontmatterField key) {
+  if (auto it = kEnumToString.find(key); it != kEnumToString.end()) {
+    return it->second;
+  }
+  throw std::runtime_error("Invalid frontmatter value.");
 }
 
 void print_file_tree(std::vector<std::string> file_tree) {

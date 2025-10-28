@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+const bool just_testing = false;
+
 /**
  * @argc - argument count
  * @argv - argument values
@@ -23,10 +25,11 @@ int main(int argc, char *argv[]) {
   std::cout << "[Tag]: " + value << std::endl;
   std::cout << "[Location]: " + file_path << std::endl;
 
-  FrontmatterField field = toField(key);
+  FrontmatterField field = stringToEnum(key);
 
   std::vector<std::string> file_tree = dfs(file_path);
-  process_files(file_tree, field, value);
+
+  process_files(file_tree, field, value, just_testing);
 
   return 0;
 }

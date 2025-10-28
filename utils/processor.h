@@ -17,11 +17,15 @@ bool detect_frontmatter(std::string file_contents);
 bool frontmatter_contains_field(const std::string &file_contents,
                                 FrontmatterField field);
 std::string move_tag_block(const std::string file_contents, std::string tag);
-std::string overwrite_subject(std::string file_contents, std::string value);
+std::string overwrite_subject(
+  std::string file_contents,
+  FrontmatterField key,
+  std::string value
+);
 void process_files(std::vector<std::string> file_tree, FrontmatterField key,
-                   std::string value);
-std::string process_subject(const std::string file_contents,
-                            const std::string value);
+                   std::string value, bool just_testing);
+std::string process_field(const std::string file_contents, FrontmatterField key, const std::string value
+                          );
 std::string process_tags(const std::string file_contents,
                          const std::string value);
 std::vector<std::string> remove_tag_block(std::vector<std::string> tokens);
