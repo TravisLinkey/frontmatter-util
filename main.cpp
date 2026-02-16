@@ -14,12 +14,23 @@ const bool just_testing = false;
  * @argv - argument values
  * **/
 int main(int argc, char *argv[]) {
-  if (argc < 4) {
-    throw std::invalid_argument("Missing required argument: tag");
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " Key=Value [file_path]\n"
+              << "  Key=Value: e.g. Subject=Software Engineering, Tag=reviewed\n"
+              << "  file_path: path to file or directory (default: .)\n"
+              << "Example: " << argv[0] << " \"Subject=Software Engineering\"\n";
+    return 1;
   }
 
-  auto args = std::array<std::string, 3>{argv[1], argv[2], argv[3]};
-  auto [key, value, file_path] = args;
+  std::string key_value = argv[1];
+  std::string::size_type eq = key_value.find('=');
+  if (eq == std::string::npos || eq == 0 || eq == key_value.size() - 1) {
+    std::cerr << "Expected Key=Value; got: " << key_value << "\n";
+    return 1;
+  }
+  std::string key = key_value.substr(0, eq);
+  std::string value = key_value.substr(eq + 1);
+  std::string file_path = (argc >= 3) ? argv[2] : ".";
 
   std::cout << "[Type]: " + key << std::endl;
   std::cout << "[Tag]: " + value << std::endl;
