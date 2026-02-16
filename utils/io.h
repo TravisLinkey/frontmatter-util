@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-enum class FrontmatterField { Subject, Tag, Type };
+enum class FrontmatterField { Subject, Tag, Type, Filter };
 
 FrontmatterField stringToEnum(const std::string& s);
 std::string enumToString(FrontmatterField key);

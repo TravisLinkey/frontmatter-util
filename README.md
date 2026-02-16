@@ -1,6 +1,6 @@
 # frontmatter-util
 
-Updates YAML frontmatter in Markdown files. Supports the keys **Subject**, **Tag**, and **Type**.
+Updates YAML frontmatter in Markdown files. Supports the keys **Subject**, **Tag**, **Type**, and **Filter**.
 
 ## Compiling
 
@@ -21,29 +21,33 @@ make clean && make
 ## Running
 
 ```text
-./main.o Key=Value [file_path]
+./main.o Key=Value [Key=Value ...] [file_path]
 ```
 
 | Argument   | Description |
 |-----------|-------------|
-| **Key=Value** | Frontmatter key and value (e.g. `Subject=Software Engineering`, `Tag=reviewed`). Key must be `Subject`, `Tag`, or `Type`. Quote the argument if the value contains spaces. |
-| **file_path** | File or directory to process. Optional; default is the current directory (`.`). |
+| **Key=Value** | One or more frontmatter key/value pairs (e.g. `Subject="Software Engineering"`, `Tag=reviewed`, `Filter=concept`). Key must be `Subject`, `Tag`, `Type`, or `Filter`. Quote the value if it contains spaces. |
+| **file_path** | File or directory to process. Optional; default is the current directory (`.`). Must not contain `=`; the first argument without `=` is treated as the path. |
 
 Examples:
 
 ```bash
-# Current directory
-./main.o "Subject=Software Engineering"
+# Single key, current directory
+./main.o Subject="Software Engineering"
 ./main.o Tag=reviewed
 
-# Specific path
-./main.o "Subject=Software Engineering" ./notes
-./main.o Type=concept /path/to/markdown
+# Multiple keys (both applied to each file)
+./main.o Subject="Software Engineering" Filter=concept
+./main.o Type=concept Tag=reviewed
+
+# With path
+./main.o Subject="Software Engineering" ./notes
+./main.o Subject="OS" Filter=concept ./notes
 ```
 
 With the `fu` alias:
 
 ```bash
-fu "Subject=Software Engineering"
-fu Tag=reviewed ./notes
+fu Subject="Software Engineering"
+fu Subject="Software Engineering" Filter=concept ./notes
 ```

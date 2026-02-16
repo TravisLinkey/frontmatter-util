@@ -9,19 +9,21 @@ static const std::unordered_map<std::string, FrontmatterField> kStringToEnum = {
     {"Subject", FrontmatterField::Subject},
     {"Tag", FrontmatterField::Tag},
     {"Type", FrontmatterField::Type},
+    {"Filter", FrontmatterField::Filter},
 };
 
 static const std::unordered_map<FrontmatterField, std::string> kEnumToString = {
     {FrontmatterField::Subject, "Subject"},
     {FrontmatterField::Tag, "Tag"},
     {FrontmatterField::Type, "Type"},
+    {FrontmatterField::Filter, "Filter"},
 };
 
 FrontmatterField stringToEnum(const std::string &s) {
   if (auto it = kStringToEnum.find(s); it != kStringToEnum.end())
     return it->second;
   throw std::runtime_error("Invalid frontmatter type: " + s +
-                           "\nMust be of type: [Subject, Tag, Type]");
+                           "\nMust be of type: [Subject, Tag, Type, Filter]");
 }
 
 std::string enumToString(FrontmatterField key) {

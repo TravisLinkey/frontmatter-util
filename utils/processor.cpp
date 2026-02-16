@@ -8,16 +8,13 @@
 #include <string>
 #include <vector>
 
-std::string template_filepath =
-    "/Users/travislinkey/Projects/cpp/workspace/frontmatter-util/source/"
-    "templates/front_matter_template.md";
-
-std::string add_frontmatter_from_template(std::string file_contents) {
+std::string add_frontmatter_from_template(std::string file_contents,
+                                          const std::string &template_path) {
   if (detect_frontmatter(file_contents)) {
     return file_contents;
   }
 
-  std::string header = read_file(template_filepath);
+  std::string header = read_file(template_path);
   return header + file_contents;
 }
 
@@ -146,6 +143,8 @@ bool frontmatter_contains_field(const std::string &file_contents,
     return string_contains(file_contents, "Subject:");
   case FrontmatterField::Type:
     return string_contains(file_contents, "Type:");
+  case FrontmatterField::Filter:
+    return string_contains(file_contents, "Filter:");
   }
 
   return false;
@@ -190,7 +189,8 @@ std::string overwrite_subject(std::string file_contents, FrontmatterField key,
 }
 
 void process_files(std::vector<std::string> file_tree, FrontmatterField key,
-                   std::string value, bool just_testing) {
+                   std::string value, bool just_testing,
+                   const std::string &template_path) {
   namespace fs = std::filesystem;
 
   for (std::string &file_path : file_tree) {
@@ -204,7 +204,7 @@ void process_files(std::vector<std::string> file_tree, FrontmatterField key,
 
     const std::string file_contents = read_file(file_path);
     const std::string file_contents_with_frontmatter =
-        add_frontmatter_from_template(file_contents);
+        add_frontmatter_from_template(file_contents, template_path);
 
     std::string updated_file_contents;
     switch (key) {
@@ -213,9 +213,9 @@ void process_files(std::vector<std::string> file_tree, FrontmatterField key,
           process_tags(file_contents_with_frontmatter, value);
       break;
 
-    // TODO - fix this below
     case FrontmatterField::Type:
     case FrontmatterField::Subject:
+    case FrontmatterField::Filter:
       updated_file_contents =
           process_field(file_contents_with_frontmatter, key, value);
       break;
@@ -227,6 +227,42 @@ void process_files(std::vector<std::string> file_tree, FrontmatterField key,
     } else {
       std::string new_file_path = file_path;
       write_file(new_file_path, updated_file_contents);
+    }
+  }
+}
+
+void process_files(std::vector<std::string> file_tree,
+                   std::vector<std::pair<FrontmatterField, std::string>> key_values,
+                   bool just_testing, const std::string &template_path) {
+  namespace fs = std::filesystem;
+
+  for (std::string &file_path : file_tree) {
+    if (fs::is_directory(file_path))
+      continue;
+    if (get_file_extention(file_path) != "md")
+      continue;
+
+    std::string content = read_file(file_path);
+    content = add_frontmatter_from_template(content, template_path);
+
+    for (const auto &[field, value] : key_values) {
+      switch (field) {
+      case FrontmatterField::Tag:
+        content = process_tags(content, value);
+        break;
+      case FrontmatterField::Type:
+      case FrontmatterField::Subject:
+      case FrontmatterField::Filter:
+        content = process_field(content, field, value);
+        break;
+      }
+    }
+
+    if (just_testing) {
+      std::cout << "-- Final Content --" << std::endl;
+      std::cout << content << std::endl;
+    } else {
+      write_file(file_path, content);
     }
   }
 }

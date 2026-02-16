@@ -3,9 +3,11 @@
 
 #include "io.h"
 #include <string>
+#include <utility>
 #include <vector>
 
-std::string add_frontmatter_from_template(std::string);
+std::string add_frontmatter_from_template(std::string file_contents,
+                                          const std::string &template_path);
 void add_tag(std::string file_contents, std::string new_tag);
 std::vector<std::string>
 add_tag_block(std::vector<std::string> filtered_file_contents,
@@ -23,7 +25,11 @@ std::string overwrite_subject(
   std::string value
 );
 void process_files(std::vector<std::string> file_tree, FrontmatterField key,
-                   std::string value, bool just_testing);
+                   std::string value, bool just_testing,
+                   const std::string &template_path);
+void process_files(std::vector<std::string> file_tree,
+                   std::vector<std::pair<FrontmatterField, std::string>> key_values,
+                   bool just_testing, const std::string &template_path);
 std::string process_field(const std::string file_contents, FrontmatterField key, const std::string value
                           );
 std::string process_tags(const std::string file_contents,
